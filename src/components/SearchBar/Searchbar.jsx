@@ -1,5 +1,5 @@
 import { Formik, ErrorMessage } from 'formik';
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import {
   SearchForm,
   Header,
@@ -10,46 +10,94 @@ import {
 
 import { FcSearch } from 'react-icons/fc';
 
-export class SearchBar extends Component {
-  //стан
-  state = {
-    searchImg: '',
-  };
-
-  // Слухач інпутів
+export const SearchBar = ({ handleSabmit, handleChange }) => {
+  const [searchImg, setsearchImg] = useState('');
   handleChange = ({ target }) => {
-    this.setState({ [target.name]: target.value.trim() });
+    setsearchImg(target.value.trim());
   };
   // Submit form
-  submit = event => {
-    event.preventDefault();
-    this.props.handleSabmit(this.state.searchImg);
+  const submit = e => {
+    e.preventDefault();
+    handleSabmit(searchImg);
   };
+  const initialValues = { searchimg: '' };
+  return (
+    <Header className="searchbar">
+      <Formik initialValues={initialValues}>
+        <SearchForm onSubmit={submit} className="form">
+          <BTNSubmit type="submit" className="button">
+            <FcSearch value={{ size: '1.5em' }} />
+            <ButtonLabel className="button-label">Search</ButtonLabel>
+          </BTNSubmit>
 
-  initialValues = { searchimg: '' };
-  render() {
-    return (
-      <Header className="searchbar">
-        <Formik initialValues={this.initialValues}>
-          <SearchForm onSubmit={this.submit} className="form">
-            <BTNSubmit type="submit" className="button">
-              <FcSearch value={{ size: '1.4em' }} />
-              <ButtonLabel className="button-label">Search</ButtonLabel>
-            </BTNSubmit>
+          <InputSearch
+            className="input"
+            name="searchImg"
+            type="text"
+            autoComplete="off"
+            autoFocus
+            onChange={handleChange}
+            placeholder="Search images and photos"
+          />
+          <ErrorMessage name="searchImg" component="div" />
+        </SearchForm>
+      </Formik>
+    </Header>
+  );
+};
 
-            <InputSearch
-              className="input"
-              name="searchImg"
-              type="text"
-              autoComplete="off"
-              autoFocus
-              onChange={this.handleChange}
-              placeholder="Search images and photos"
-            />
-            <ErrorMessage name="searchImg" component="div" />
-          </SearchForm>
-        </Formik>
-      </Header>
-    );
-  }
-}
+// import { Formik, ErrorMessage } from 'formik';
+// import React, { Component } from 'react';
+// import {
+//   SearchForm,
+//   Header,
+//   BTNSubmit,
+//   ButtonLabel,
+//   InputSearch,
+// } from '../SearchBar/Searchbar.styled.js';
+
+// import { FcSearch } from 'react-icons/fc';
+
+// export class SearchBar extends Component {
+//   //стан
+//   state = {
+//     searchImg: '',
+//   };
+
+//   // Слухач інпутів
+//   handleChange = ({ target }) => {
+//     this.setState({ [target.name]: target.value.trim() });
+//   };
+//   // Submit form
+//   submit = event => {
+//     event.preventDefault();
+//     this.props.handleSabmit(this.state.searchImg);
+//   };
+
+//   initialValues = { searchimg: '' };
+//   render() {
+//     return (
+//       <Header className="searchbar">
+//         <Formik initialValues={this.initialValues}>
+//           <SearchForm onSubmit={this.submit} className="form">
+//             <BTNSubmit type="submit" className="button">
+//               <FcSearch value={{ size: '1.4em' }} />
+//               <ButtonLabel className="button-label">Search</ButtonLabel>
+//             </BTNSubmit>
+
+//             <InputSearch
+//               className="input"
+//               name="searchImg"
+//               type="text"
+//               autoComplete="off"
+//               autoFocus
+//               onChange={this.handleChange}
+//               placeholder="Search images and photos"
+//             />
+//             <ErrorMessage name="searchImg" component="div" />
+//           </SearchForm>
+//         </Formik>
+//       </Header>
+//     );
+//   }
+// }
