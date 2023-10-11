@@ -50,9 +50,11 @@ export const App = () => {
         setIsLoading(true);
         setError(null);
         //запит на API
-        const images = fetchPictures(searchImg, abortCtrl, page);
+        const images = await fetchPictures(searchImg, abortCtrl, page);
 
+        console.log(searchImg);
         // додаю у стан масив даних для для галереї
+
         setSearchAr(prevSearchAr => {
           return [
             ...prevSearchAr,
