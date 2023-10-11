@@ -40,8 +40,8 @@ const App = () => {
     color: '#010101',
   };
   // Життєвий цикл
-   useEffect((prevProps, nextState)=> {
- async
+  useEffect((prevProps, nextState) => {
+  async
     // перевірка на однаковий ввід та повтор сторінок запиту
     if (
       searchImg === nextState.searchImg &&
@@ -67,7 +67,7 @@ const App = () => {
       setIsloading(true)
       setError(null)
       //запит на API
-      const images =  await fetchPictures(searchImg, abortCtrl, page);
+      const images = fetchPictures(searchImg, abortCtrl, page);
       // Нотифікашка скільки є картинок по запиту
       if (images.totalhits) {
         Notify.info(`Hooray! We found ${images.totalHits} images.`);
@@ -109,9 +109,8 @@ const App = () => {
       }
     } finally {
       setIsloading(false)
-    }
-  }
-  },[])
+      }
+    },[])
   
 
   //новий запит по кліку на LoadMore
@@ -120,7 +119,7 @@ const App = () => {
     setPage(page + 1);
   };
 
-   {
+   
     // Деструкторизуємо значення в стейті
 
     // const { isLoading, searchAr, isShow, error } = this.state;
@@ -140,8 +139,8 @@ const App = () => {
         {isShow && <BTNLoadMore onChange={newFetchImages} />}
       </div>
     );
-  }
-
+},
+}
 
 export default App;
 
