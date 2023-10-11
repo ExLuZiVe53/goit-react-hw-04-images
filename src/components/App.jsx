@@ -1,37 +1,34 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 import Loader from './Loader/Loader.jsx';
 import { Notify } from 'notiflix';
 import { BTNLoadMore } from './Button/Button.jsx';
 import { fetchPictures } from './Api/fetchPictures.js';
-import { ImageGallery } from './ImageGallery/ImageGallery.jsx';
+import ImageGallery from './ImageGallery/ImageGallery.jsx';
 import { SearchBar } from './SearchBar/Searchbar.jsx';
 import { ErMessage } from './SearchBar/ErMessage.jsx';
 
-const App = () => {
-  // Stay abortControl
-  
-  abortCtrl;
-
-  // Стан, переписуємо його за допомогою хуків useState
-
-  const [isLoading, setIsloading] = useState(false);
+export const App = () => {
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searchAr, setSearchAr] = useState([]);
   const [searchImg, setSearchImg] = useState('');
   const [page, setPage] = useState(1);
   const [isShow, setIsShow] = useState(false);
+  const abortCtrl = useRef(null);
 
-  
-
-  // write Submit function
-  handleSabmit = input => {
-    setSearchImg(input)
-    setPage(1)
-    
+  // Сабміт форми
+  const handleSabmit = input => {
+    if (searchImg !== input) {
+      setSearchImg(input);
+      setSearchAr([]);
+      setPage(1);
+      setIsShow(false);
+    }
   };
-  //Styles with APP
-  appStyle = {
+
+  //стилі для App
+  const appStyle = {
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
@@ -39,110 +36,82 @@ const App = () => {
     fontSize: 40,
     color: '#010101',
   };
-  // Життєвий цикл
-  useEffect((prevProps, nextState) => {
-  async
-    // перевірка на однаковий ввід та повтор сторінок запиту
-    if (
-      searchImg === nextState.searchImg &&
-      page === nextState.page
-    ) {
-      return;
-    }
 
-    // перевірка на новий пошук в інпуті
-    if (searchImg !== nextState.searchImg) {
-      setSearchAr([])
-      setPage(1)
-      setIsShow(false)
-      
-    }
-    try {
-      // const { searchImg, page } = this.state;
-
-      //ініціалізація абортконтролера
-      abortCtrl = new AbortController();
-      // зміна стану
-      
-      setIsloading(true)
-      setError(null)
-      //запит на API
-      const images = fetchPictures(searchImg, abortCtrl, page);
-      // Нотифікашка скільки є картинок по запиту
-      if (images.totalhits) {
-        Notify.info(`Hooray! We found ${images.totalHits} images.`);
+  useEffect(() => {
+    const fetchData = async () => {
+      //
+      if (searchImg === '' && page === 1) {
+        return;
       }
-      // додаю у стан масив даних для галереї
-      console.log(images.hits);
+      try {
+        //ініціалізація абортконтролера
 
-      setIsShow(
-        prevImages => ({
-          searchAr: [
-            ...prevImages.searchAr,
+        abortCtrl.current = new AbortController();
+        setIsLoading(true);
+        setError(null);
+        //запит на API
+        const images = fetchPictures(searchImg, abortCtrl, page);
+
+        // додаю у стан масив даних для для галереї
+        setSearchAr(prevSearchAr => {
+          return [
+            ...prevSearchAr,
             ...images.hits.map(({ tags, id, largeImageURL, webformatURL }) => ({
               tags,
               id,
               largeImageURL,
               webformatURL,
             })),
-          ],
-          isShow: true,
-        }),
-        //плавний скрол
-        () => {
-          if (page !== 1)
-            window.scrollBy({
-              top: 260 * 3,
-              behavior: 'smooth',
-            });
+          ];
+        });
+        setIsShow(true);
+        // плавний скрол
+        if (page !== 1) {
+          window.scrollBy({
+            top: 230 * 3,
+            behavior: 'smooth',
+          });
         }
-      );
-      //перевірка на останю партію картинок і приховання кнопки LoadMore
-      if (images.hits.length < 12) {
-        setIsShow(false)
-        Notify.failure('Sorry, that is all results.');
+        // Нотифікашка скільки є картинок по запиту
+
+        if (images.totalHits) {
+          Notify.info(`Hooray! We found ${images.totalHits} images.`);
+        }
+
+        //перевірка на останю партію картинок і приховання кнопки LoadMore
+        if (images.hits.length < 12) {
+          setIsShow(false);
+          Notify.failure('Sorry, that is all results.');
+        }
+      } catch (error) {
+        if (error.code !== 'ERR_CANCELED') {
+          setError('Somethink was wrong! Please reloading the page.');
+        }
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      if (error.code !== 'ERR_CANCELED') {
-        setError('Somethink was wrong! Please reloading the page.')
-        
-      }
-    } finally {
-      setIsloading(false)
-      }
-    },[])
-  
+    };
+    fetchData();
+  }, [searchImg, page]);
 
   //новий запит по кліку на LoadMore
-
   const newFetchImages = () => {
-    setPage(page + 1);
+    setPage(prevPage => prevPage + 1);
   };
 
-   
-    // Деструкторизуємо значення в стейті
-
-    // const { isLoading, searchAr, isShow, error } = this.state;
-
-    return (
-      <div style={appStyle}>
-        <SearchBar
-          handleSabmit={handleSabmit}
-          handleChange={handleChange}
-        />
-        {isLoading && (
-          // true
-          <Loader />
-        )}
-        {error && <ErMessage>{error}</ErMessage>}
-        <ImageGallery images={searchAr} />
-        {isShow && <BTNLoadMore onChange={newFetchImages} />}
-      </div>
-    );
-},
-}
-
-export default App;
+  return (
+    <div style={appStyle}>
+      <SearchBar handleSabmit={handleSabmit} />
+      {isLoading && (
+        // true
+        <Loader />
+      )}
+      {error && <ErMessage>{error}</ErMessage>}
+      <ImageGallery images={searchAr} />
+      {isShow && <BTNLoadMore newFetchImages={newFetchImages} />}
+    </div>
+  );
+};
 
 // import React, { Component } from 'react';
 
